@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iron Dome Defense</title>
+    <style>
+      /* CSS remains the same */
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #000;
+        color: #fff;
+        font-family: Arial, sans-serif;
+      }
+      #gameCanvas {
+        display: block;
+        background: #111; /* Fallback if image fails */
+        margin: 0 auto;
+      }
+      #ui {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: none;
+        color: #fff;
+        font-size: 16px;
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.5
+        ); /* Slight background for readability */
+        padding: 5px;
+        border-radius: 5px;
+      }
+      #ui p {
+        margin: 4px 0;
+      }
+      #intro,
+      #endScreen {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.85);
+        padding: 20px;
+        border: 2px solid #fff;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        color: #fff;
+        overflow: auto;
+        top: 0;
+        left: 0;
+        z-index: 10; /* Ensure intro/end are on top */
+      }
+      #endScreen {
+        display: none;
+        width: auto;
+        height: auto;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+      }
+      button {
+        margin-top: 20px;
+        padding: 12px 24px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 8px;
+        background: #00bfff;
+        color: #fff;
+      }
+      button:disabled {
+        /* Style for disabled button */
+        background: #555;
+        cursor: not-allowed;
+      }
+      #startBtn {
+        display: block;
+        margin: 20px auto 0 auto;
+      }
+      #endButton {
+        background: #4caf50;
+      }
+      .progress-container {
+        width: 100%;
+        background: #333;
+        height: 20px;
+        margin-top: 5px;
+      }
+      .progress-bar {
+        height: 100%;
+        background: #4caf50;
+        width: 0%;
+        transition: width 0.3s;
+      }
+      #preloader {
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      #characterImage {
+        float: right;
+        width: 150px;
+        margin: 0 0 10px 15px;
+        border: 2px solid #00bfff;
+      }
+      @media (max-width: 600px) {
+        #characterImage {
+          width: 100px;
+          margin: 0 0 10px 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="preloader">
+      <img
+        id="interceptorImg"
+        src="assets/interceptor.png"
+        alt="Interceptor Missile"
+        crossorigin="anonymous"
+      />
+      <img
+        id="ballisticThreatImg"
+        src="assets/ballistic-missle.png"
+        alt="Ballistic Missile Threat"
+        crossorigin="anonymous"
+      />
+      <img
+        id="cruiseThreatImg"
+        src="assets/cruise-missile.png"
+        alt="Cruise Missile Threat"
+        crossorigin="anonymous"
+      />
+      <img
+        id="droneThreatImg"
+        src="assets/drone.png"
+        alt="Drone Threat"
+        crossorigin="anonymous"
+      />
+      <img
+        id="ironDomeImg"
+        src="assets/irondome.png"
+        alt="Iron Dome Base"
+        crossorigin="anonymous"
+      />
+      <img
+        id="backgroundImg"
+        src="assets/background-telaviv.png"
+        alt="Game Background"
+        crossorigin="anonymous"
+      />
+      <img
+        id="eranImg"
+        src="assets/npceran.png"
+        alt="Eran Moran"
+        crossorigin="anonymous"
+      />
+    </div>
+
+    <div id="intro">
+      <h1>Iron Dome Defense</h1>
+      <img
+        id="characterImage"
+        src="assets/npceran.png"
+        alt="Eran Moran"
+        crossorigin="anonymous"
+      />
+      <p>
+        On the night of April 13, 2024, the Middle East changed forever. For the
+        first time in history, Iran launched a massive, direct assault on
+        Israel—codenamed <strong>Operation True Promise</strong>. Over 170
+        drones, more than 30 cruise missiles, and upwards of 120 ballistic
+        missiles streaked across the sky, targeting Israeli military bases and
+        strategic sites. The world watched as Israel and its allies scrambled to
+        intercept the largest drone strike in history, using advanced air
+        defense systems like Arrow 3 and David's Sling.
+      </p>
+      <p>
+        Now, you—<strong>Hapash Eran Moran</strong>—are on a critical mission:
+        to stop the missile attacks, protect your homeland, and change the
+        course of history. The fate of millions rests in your hands.
+      </p>
+      <h2>How to Play:</h2>
+      <p>- Click anywhere on the screen to launch an interceptor missile</p>
+      <p>- Stop as many threats as possible before they reach the ground</p>
+      <p>- You can only afford 10 hits before mission failure</p>
+      <button id="startBtn">start.</button>
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="ui">
+      <p style="color: lime">
+        Drones Remaining: <span id="droneCount">170</span>
+      </p>
+      <p style="color: yellow">
+        Cruise Missiles: <span id="cruiseCount">30</span>
+      </p>
+      <p style="color: red">
+        Ballistic Missiles: <span id="ballisticCount">120</span>
+      </p>
+      <p style="color: #fff">Hits: <span id="hits">0</span> / 10</p>
+      <div class="progress-container">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+    </div>
+    <div id="endScreen">
+      <h2>Mission Status</h2>
+      <p id="endMessage"></p>
+      <p id="statsMessage"></p>
+      <button id="endButton">Play Again</button>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
